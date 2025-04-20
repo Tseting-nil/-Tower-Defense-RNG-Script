@@ -1,7 +1,7 @@
 local Players = game:GetService("Players")
-
 local Menus = Players.LocalPlayer.PlayerGui.Main.Menus
 
+-- 分類表：每種技能分類都放在對應表格中
 local skillTreeGroups = {
 	amethystCrate = {}, auraStorage = {}, augments = {}, augmentReroll = {}, augmentSlot = {}, autoCollect = {},
 	autoRebirth = {}, autoRoll = {}, autoTraitRoll = {}, betterCosmicWish = {}, betterOnyxes = {}, betterPotions = {},
@@ -25,22 +25,7 @@ for _, item in ipairs(skilltreeframe:GetChildren()) do
 	end
 end
 
--- 根據名稱前綴排序（去除數字部分）
-table.sort(items, function(a, b)
-	local nameA = a.Name:match("^(.-)%d*$") or a.Name
-	local nameB = b.Name:match("^(.-)%d*$") or b.Name
-	return nameA:lower() < nameB:lower()
-end)
-
--- 重新命名為 名稱 + 數字（強制從1開始）
-local nameCounter = {}
-for _, item in ipairs(items) do
-	local baseName = item.Name:match("^(.-)%d*$") or item.Name
-	nameCounter[baseName] = (nameCounter[baseName] or 0) + 1
-	item.Name = baseName .. tostring(nameCounter[baseName])
-end
-
--- 自動分類
+-- 自動分類（不更改名稱）
 local unclassified = {}
 
 for _, item in ipairs(items) do
@@ -67,28 +52,23 @@ else
 	print("✅ 所有項目已成功分類")
 end
 
--- 輸出分類結果
---[[
-for groupName, items in pairs(skillTreeGroups) do
-    print("✅ " .. groupName .. "：")
-    for _, item in ipairs(items) do
-        print("- " .. item.Name)
-    end
-end
-]]
-
+-- 發送升級請求函數
 local function Updskill(name)
-    name = tostring(name)
-    print(name .. " 已升級✅")
-    local args = {[1] = "upgrade",[2] = name}
-    game:GetService("ReplicatedStorage")._NetworkServiceContainer.UpgradeService:FireServer(unpack(args))
+	name = tostring(name)
+	print(name .. " 已升級✅")
+	local args = { [1] = "upgrade", [2] = name }
+	game:GetService("ReplicatedStorage")._NetworkServiceContainer.UpgradeService:FireServer(unpack(args))
 end
+
+-- 升級素材的使用開關
 Useruby = false
 UseCosmicGem = false
 UseTrophies = false
 Usedice = false
 Usecoin = false
 Useonyx = false
+
+-- 主函數：自動判斷哪些技能可以升級
 function __SelectUpgskill()
 	for _, items in pairs(skillTreeGroups) do
 		for _, item in ipairs(items) do
@@ -96,33 +76,38 @@ function __SelectUpgskill()
 			local frame = item.Frame
 			local bgImage = frame.background.Image
 
+			-- 判斷是否已升級
 			if bgImage == "rbxassetid://88163281281385" or bgImage == "rbxassetid://134102627356586" then
 				--print(itemName .. " 已升級❎，跳過❌")
+			-- 判斷是否未解鎖
 			elseif frame.Question.Visible then
 				--print(itemName .. " 未解鎖，跳過⛔")
 			else
+				-- 判斷升級所需素材類型與使用限制
 				local costType = frame.Frame.Cost.PrefixImage.Image
 				local skip = false
 
 				if costType == "rbxassetid://104106007524029" and not Useruby then
 					--print(itemName .. " 跳過🩸紅寶石升級⛔")
-                    skip = true
+					skip = true
 				elseif costType == "rbxassetid://94471283680852" and not UseCosmicGem then
 					--print(itemName .. " 跳過💎宇宙寶石升級⛔")
-                    skip = true
-                elseif costType == "rbxassetid://100594914564412" and not Useonyx then
-                    --print(itemName .. " 跳過💎💎瑪瑙礦石升級⛔")
-                    skip = true
-                elseif costType == "rbxassetid://70395215463469" and not UseTrophies then
+					skip = true
+				elseif costType == "rbxassetid://100594914564412" and not Useonyx then
+					--print(itemName .. " 跳過💎💎瑪瑙礦石升級⛔")
+					skip = true
+				elseif costType == "rbxassetid://70395215463469" and not UseTrophies then
 					--print(itemName .. " 跳過🏆獎盃升級⛔")
-                    skip = true
+					skip = true
 				elseif costType == "rbxassetid://110169018534051" and not Usedice then
 					--print(itemName .. " 跳過🎲骰子升級⛔")
-                    skip = true
+					skip = true
 				elseif costType == "rbxassetid://18642455935" and not Usecoin then
 					--print(itemName .. " 跳過💰硬幣升級⛔")
-                    skip = true
+					skip = true
 				end
+
+				-- 如果不跳過，且資源足夠，執行升級
 				if not skip then
 					if frame.Frame.Cost.Text.TextColor3 == Color3.fromRGB(255, 113, 113) then
 						print(itemName .. " 材料不足❌")
@@ -136,4 +121,5 @@ function __SelectUpgskill()
 	end
 end
 
+-- 啟動自動升級
 __SelectUpgskill()

@@ -68,34 +68,7 @@ local function LootMenu1change()
         end
     end
 end
--- ========================================================================== --
--- 技能數資料夾名稱更改
-local UpgradeTree = Menus.UpgradeTree
-local UpgradeTree2 = Menus.UpgradeTree.Frame.Frame.Frame.progression2.Frame
-local UpgradeTreechange = false
-local function UpgradeTree1change()
-    if UpgradeTree and UpgradeTree2 then
-        local i = 0
-        while true do
-            i = i + 1
-            local UpgradeTreec = UpgradeTree:FindFirstChild("Counter")
-            local UpgradeTreec2 = UpgradeTree2:FindFirstChild("Frame")
-            if UpgradeTreec and UpgradeTreec2 then
-                UpgradeTreec.Name = "Counter" .. i
-                UpgradeTreec2.Name = "Frame" .. i
-            else
-                if not UpgradeTreechange then
-                    print("技能數-名稱-已更改")
-                    UpgradeTreechange = true
-                end
-                break
-            end
-        end
-    end
-end
-
 
 Rebirth1change()
 Ascend1change()
 LootMenu1change()
-UpgradeTree1change()
